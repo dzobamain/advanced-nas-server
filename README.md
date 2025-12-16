@@ -1,0 +1,1 @@
+This is a NAS server project that can be installed on your computer and accessed from anywhere with an internet connection. The main goal is to enable use of the server not just on a home network, but from anywhere in the world.
