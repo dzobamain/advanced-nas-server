@@ -7,5 +7,3 @@ cd build
 
 cmake ..
 make
-
-./advanced-nas-server
