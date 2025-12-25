@@ -9,6 +9,7 @@ include_directories(include)
 
 set(SOURCES
     src/main.c
+    src/core.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
