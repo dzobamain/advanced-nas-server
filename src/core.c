@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "core.h"
+#include "logger.h"
 
 int set_buffer_size(struct buffer* buf, size_t new_size)
 {
@@ -98,32 +99,36 @@ int setup_address(struct sockaddr_in *addr, int port)
 
 int create_server_socket(int port)
 {
+    // Create socket
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
         perror("socket");
         return -1;
     }
 
+    // Set socket options
     int opt = 1;
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR,
-                   &opt, sizeof(opt)) < 0) {
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         perror("setsockopt");
         close(server_fd);
         return -1;
     }
 
+    // Setup address and bind
+    // -
     struct sockaddr_in addr;
     if (setup_address(&addr, port) < 0) {
         close(server_fd);
         return -1;
     }
-
+    //-
     if (bind(server_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         perror("bind");
         close(server_fd);
         return -1;
     }
 
+    // Start listening
     if (listen(server_fd, BACKLOG) < 0) {
         perror("listen");
         close(server_fd);
@@ -133,39 +138,67 @@ int create_server_socket(int port)
     return server_fd;
 }
 
-
 void handle_client(int client_fd, struct buffer *buf)
 {
-    read(client_fd, buf->data, buf->length);
-
-    FILE *file = fopen(HTML_FILE, "r");
-    if (!file) {
-        const char *err =
-            "HTTP/1.1 500 Internal Server Error\r\n"
-            "Content-Type: text/plain\r\n"
-            "Connection: close\r\n\r\n"
-            "Cannot open HTML file";
-        write(client_fd, err, strlen(err));
+    // Read the request
+    ssize_t r = read(client_fd, buf->data, buf->length);
+    if (r <= 0) {
         close(client_fd);
         return;
     }
 
+    // Parse the request line
+    char method[8], path[256];
+    sscanf(buf->data, "%s %255s", method, path);
+
+    char filename[256];
+    if (strcmp(path, "/") == 0) {
+        snprintf(filename, sizeof(filename), "%s", HTML_FILE);
+    } else {
+        // Remove leading '/'
+        snprintf(filename, sizeof(filename), ".%s", path);
+    }
+
+    // Content-Type
+    const char *content_type = "text/plain";
+
+    if (strstr(filename, ".html"))
+        content_type = "text/html; charset=UTF-8";
+    else if (strstr(filename, ".css"))
+        content_type = "text/css; charset=UTF-8";
+    /*
+    else if (strstr(filename, ".js"))
+        content_type = "application/javascript";
+    else if (strstr(filename, ".png"))
+        content_type = "image/png";
+    else if (strstr(filename, ".jpg") || strstr(filename, ".jpeg"))
+        content_type = "image/jpeg";
+    */
+
+    // Open the requested file
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        write(client_fd, HTTP_404_NOT_FOUND_RESPONSE, strlen(HTTP_404_NOT_FOUND_RESPONSE));
+        close(client_fd);
+        return;
+    }
+
+    // Get file size
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    // HTTP header
+    // Send HTTP response header
     char header[256];
     snprintf(header, sizeof(header),
         "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html; charset=UTF-8\r\n"
+        "Content-Type: %s\r\n"
         "Content-Length: %ld\r\n"
         "Connection: close\r\n\r\n",
-        file_size);
+        content_type, file_size);
 
     write(client_fd, header, strlen(header));
 
-    // body
     size_t n;
     while ((n = fread(buf->data, 1, buf->length, file)) > 0) {
         write(client_fd, buf->data, n);
@@ -173,19 +206,4 @@ void handle_client(int client_fd, struct buffer *buf)
 
     fclose(file);
     close(client_fd);
-}
-
-int start_listening(int server_fd, struct sockaddr_in *addr) 
-{
-    if (bind(server_fd, (struct sockaddr *)addr, sizeof(*addr)) < 0) {
-        perror("bind");
-        return -1;
-    }
-
-    if (listen(server_fd, 10) < 0) {
-        perror("listen");
-        return -1;
-    }
-
-    return 0;
 }

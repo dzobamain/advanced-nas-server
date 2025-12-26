@@ -1,0 +1,92 @@
+/* General styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container */
+.container {
+    background: #ffffff;
+    padding: 25px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Title */
+.login-title {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 28px;
+    color: #333;
+}
+
+/* Input groups */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 16px;
+    color: #444;
+}
+
+/* Input fields */
+.input-field {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+.input-field:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74,144,226,0.4);
+}
+
+/* Button */
+.login-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+.login-button:hover {
+    background: #3b7ac2;
+}
+
+/* Responsive styles */
+@media (max-width: 480px) {
+    .container {
+        padding: 20px;
+        width: 88%;
+    }
+
+    .login-title {
+        font-size: 24px;
+    }
+
+    .input-field, .login-button {
+        font-size: 16px;
+    }
+}

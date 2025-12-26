@@ -1,5 +1,5 @@
-#ifndef SERVER_UTILS_H
-#define SERVER_UTILS_H
+#ifndef CORE_H
+#define CORE_H
 
 #include <netinet/in.h>
 
@@ -16,6 +16,5 @@ int get_local_ip(char *buffer, size_t buflen);
 int create_server_socket(int port);
 int setup_address(struct sockaddr_in *addr, int port);
 void handle_client(int client_fd, struct buffer *buf);
-int start_listening(int server_fd, struct sockaddr_in *addr);
 
-#endif // SERVER_UTILS_H
+#endif // CORE_H
