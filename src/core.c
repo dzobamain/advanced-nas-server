@@ -166,9 +166,9 @@ void handle_client(int client_fd, struct buffer *buf)
         content_type = "text/html; charset=UTF-8";
     else if (strstr(filename, ".css"))
         content_type = "text/css; charset=UTF-8";
-    /*
     else if (strstr(filename, ".js"))
         content_type = "application/javascript";
+    /*
     else if (strstr(filename, ".png"))
         content_type = "image/png";
     else if (strstr(filename, ".jpg") || strstr(filename, ".jpeg"))
