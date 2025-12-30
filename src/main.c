@@ -7,6 +7,8 @@
 #include "core.h"
 #include "config.h"
 
+#include "db.h"
+
 int main() 
 {
     int server_fd = create_server_socket(PORT);
@@ -32,5 +34,6 @@ int main()
 
     free_buffer(&buf);
     close(server_fd);
+
     return 0;
 }

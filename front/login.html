@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Advanced NAS Server</title>
+    <title>Advanced NAS Server – Login</title>
+
     <link rel="stylesheet" href="./front/login.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -12,28 +13,24 @@
     <div class="container">
         <h1 class="login-title">Login</h1>
 
-        <form class="login-form">
+        <form class="login-form" id="loginForm">
             <div class="input-group">
                 <label for="username">Username</label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    class="input-field" 
-                    placeholder="Enter username"
-                >
+                <input type="text" id="username" name="username" class="input-field" placeholder="Enter username"
+                    required>
             </div>
 
             <div class="input-group">
                 <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    class="input-field" 
-                    placeholder="Enter password"
-                >
+                <input type="password" id="password" name="password" class="input-field" placeholder="Enter password"
+                    required>
             </div>
 
-            <button type="submit" class="login-button">Login</button>
+            <button type="submit" class="login-button">
+                Login
+            </button>
+
+            <p id="error-message" class="error-message"></p>
         </form>
     </div>
 

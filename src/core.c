@@ -8,6 +8,7 @@
 #include "config.h"
 #include "core.h"
 #include "logger.h"
+#include "db.h"
 
 int set_buffer_size(struct buffer* buf, size_t new_size)
 {
@@ -140,26 +141,105 @@ int create_server_socket(int port)
 
 void handle_client(int client_fd, struct buffer *buf)
 {
-    // Read the request
-    ssize_t r = read(client_fd, buf->data, buf->length);
+    ssize_t r = read(client_fd, buf->data, buf->length - 1);
     if (r <= 0) {
         close(client_fd);
         return;
     }
+    buf->data[r] = '\0';
 
-    // Parse the request line
     char method[8], path[256];
-    sscanf(buf->data, "%s %255s", method, path);
+    sscanf(buf->data, "%7s %255s", method, path);
 
-    char filename[256];
-    if (strcmp(path, "/") == 0) {
-        snprintf(filename, sizeof(filename), "%s", HTML_FILE);
-    } else {
-        // Remove leading '/'
-        snprintf(filename, sizeof(filename), ".%s", path);
+    if (strcmp(method, "POST") == 0 && strcmp(path, "/login") == 0) {
+        handle_login(client_fd, buf);
+        return;
     }
 
-    // Content-Type
+    serve_static_file(client_fd, buf, path);
+}
+
+
+void handle_login(int client_fd, struct buffer *buf)
+{
+    char *body = strstr(buf->data, "\r\n\r\n");
+    if (!body) {
+        close(client_fd);
+        return;
+    }
+    body += 4;
+
+    char username[64], password[64];
+    sscanf(body, "username=%63[^&]&password=%63s", username, password);
+
+    int role = check_user_in_db(DATABASE_FILE, username, password);
+
+    if (role >= 0) {
+        const char *ok =
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Connection: close\r\n\r\n"
+            "LOGIN_OK";
+        write(client_fd, ok, strlen(ok));
+    } else {
+        const char *fail =
+            "HTTP/1.1 401 Unauthorized\r\n"
+            "Content-Type: text/plain\r\n"
+            "Connection: close\r\n\r\n"
+            "LOGIN_FAILED";
+        write(client_fd, fail, strlen(fail));
+    }
+
+    close(client_fd);
+}
+
+void parse_post_data(const char *body, char *username, char *password)
+{
+    username[0] = '\0';
+    password[0] = '\0';
+
+    // Found username
+    const char *u = strstr(body, "username=");
+    if (u) {
+        u += 9;
+        const char *amp = strchr(u, '&');
+        if (amp) {
+            size_t len = amp - u;
+            if (len >= 64) len = 63;
+            strncpy(username, u, len);
+            username[len] = '\0';
+        } else {
+            strncpy(username, u, 63);
+            username[63] = '\0';
+        }
+    }
+
+    // Found password
+    const char *p = strstr(body, "password=");
+    if (p) {
+        p += 9;
+        const char *amp = strchr(p, '&');
+        if (amp) {
+            size_t len = amp - p;
+            if (len >= 64) len = 63;
+            strncpy(password, p, len);
+            password[len] = '\0';
+        } else {
+            strncpy(password, p, 63);
+            password[63] = '\0';
+        }
+    }
+}
+
+void serve_static_file(int client_fd, struct buffer *buf, const char *path)
+{
+    char filename[256];
+
+    if (strcmp(path, "/") == 0)
+        snprintf(filename, sizeof(filename), "%s", LOGIN_HTML_FILE);
+    else
+        snprintf(filename, sizeof(filename), ".%s", path);
+
     const char *content_type = "text/plain";
 
     if (strstr(filename, ".html"))
@@ -168,27 +248,19 @@ void handle_client(int client_fd, struct buffer *buf)
         content_type = "text/css; charset=UTF-8";
     else if (strstr(filename, ".js"))
         content_type = "application/javascript";
-    /*
-    else if (strstr(filename, ".png"))
-        content_type = "image/png";
-    else if (strstr(filename, ".jpg") || strstr(filename, ".jpeg"))
-        content_type = "image/jpeg";
-    */
 
-    // Open the requested file
     FILE *file = fopen(filename, "rb");
     if (!file) {
-        write(client_fd, HTTP_404_NOT_FOUND_RESPONSE, strlen(HTTP_404_NOT_FOUND_RESPONSE));
+        write(client_fd, HTTP_404_NOT_FOUND_RESPONSE,
+              strlen(HTTP_404_NOT_FOUND_RESPONSE));
         close(client_fd);
         return;
     }
 
-    // Get file size
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    // Send HTTP response header
     char header[256];
     snprintf(header, sizeof(header),
         "HTTP/1.1 200 OK\r\n"
