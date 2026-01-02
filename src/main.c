@@ -7,8 +7,6 @@
 #include "core.h"
 #include "config.h"
 
-#include "db.h"
-
 int main() 
 {
     int server_fd = create_server_socket(PORT);
@@ -19,6 +17,7 @@ int main()
     get_local_ip(local_ip, sizeof(local_ip));
     printf("Server running on http://%s:%d\n", local_ip, PORT);
 
+    const int BUFFER_SIZE = 4096;
     struct buffer buf = {0};
     set_buffer_size(&buf, BUFFER_SIZE);
 

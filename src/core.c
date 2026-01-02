@@ -130,7 +130,7 @@ int create_server_socket(int port)
     }
 
     // Start listening
-    if (listen(server_fd, BACKLOG) < 0) {
+    if (listen(server_fd, BACKLOG) < 0) { 
         perror("listen");
         close(server_fd);
         return -1;
@@ -155,10 +155,9 @@ void handle_client(int client_fd, struct buffer *buf)
         handle_login(client_fd, buf);
         return;
     }
-
+    
     serve_static_file(client_fd, buf, path);
 }
-
 
 void handle_login(int client_fd, struct buffer *buf)
 {
@@ -169,12 +168,11 @@ void handle_login(int client_fd, struct buffer *buf)
     }
     body += 4;
 
-    char username[64], password[64];
-    sscanf(body, "username=%63[^&]&password=%63s", username, password);
+    struct user usr; 
+    sscanf(body, "username=%63[^&]&password=%63s", usr.username, usr.password);
 
-    int role = check_user_in_db(DATABASE_FILE, username, password);
-
-    if (role >= 0) {
+    int is_user = is_user_in_db(DATABASE_FILE, &usr);
+    if (is_user == 1) {
         const char *ok =
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/plain\r\n"
@@ -193,43 +191,6 @@ void handle_login(int client_fd, struct buffer *buf)
     close(client_fd);
 }
 
-void parse_post_data(const char *body, char *username, char *password)
-{
-    username[0] = '\0';
-    password[0] = '\0';
-
-    // Found username
-    const char *u = strstr(body, "username=");
-    if (u) {
-        u += 9;
-        const char *amp = strchr(u, '&');
-        if (amp) {
-            size_t len = amp - u;
-            if (len >= 64) len = 63;
-            strncpy(username, u, len);
-            username[len] = '\0';
-        } else {
-            strncpy(username, u, 63);
-            username[63] = '\0';
-        }
-    }
-
-    // Found password
-    const char *p = strstr(body, "password=");
-    if (p) {
-        p += 9;
-        const char *amp = strchr(p, '&');
-        if (amp) {
-            size_t len = amp - p;
-            if (len >= 64) len = 63;
-            strncpy(password, p, len);
-            password[len] = '\0';
-        } else {
-            strncpy(password, p, 63);
-            password[63] = '\0';
-        }
-    }
-}
 
 void serve_static_file(int client_fd, struct buffer *buf, const char *path)
 {

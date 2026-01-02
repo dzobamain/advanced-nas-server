@@ -6,13 +6,13 @@
 
 struct user {
     int id;
-    int status;
+    int role; // 0 = admin, 1 = user, 2 = limited
     char username[USERNAME_MAX];
     char password[PASSWORD_MAX];
 };
 
-int check_user_in_db(const char* db_path, const char *username, const char *password);
-int add_user(const char *db_path, const struct user *user);
+int is_user_in_db(const char *db_path, const struct user *usr);
+int add_user(const char *db_path, const struct user *usr);
 int delete_user(const char *db_path, const char *username);
 int print_all_users(const char *db_path);
 
