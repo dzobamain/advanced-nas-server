@@ -13,6 +13,7 @@ set(SOURCES
     src/core.c
     src/logger.c
     src/db.c
+    src/http.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

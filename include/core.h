@@ -16,8 +16,4 @@ int get_local_ip(char *buffer, size_t buflen);
 int create_server_socket(int port);
 int setup_address(struct sockaddr_in *addr, int port);
 
-void handle_client(int client_fd, struct buffer *buf);
-void handle_login(int client_fd, struct buffer *buf);
-void serve_static_file(int client_fd, struct buffer *buf, const char *path);
-
 #endif // CORE_H

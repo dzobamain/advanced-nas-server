@@ -6,6 +6,7 @@
 
 #include "core.h"
 #include "config.h"
+#include "http.h"
 
 int main() 
 {
