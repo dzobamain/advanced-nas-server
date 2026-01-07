@@ -1,0 +1,118 @@
+/* ===== General ===== */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+}
+
+/* ===== Header ===== */
+.top-bar {
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    padding: 14px 18px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    background: #ccc;
+    border-radius: 50%;
+}
+
+.title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 2D settings icon */
+.settings {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.gear {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #555;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+}
+
+.gear::before,
+.gear::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 2px;
+    background: #555;
+    transform: translate(-50%, -50%);
+}
+
+.gear::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* ===== Content ===== */
+.content {
+    padding: 20px;
+}
+
+/* ===== Folders Grid ===== */
+.folders-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 160px);
+    gap: 40px;
+}
+
+/* ===== Folder Card ===== */
+.folder {
+    width: 160px;
+    background: #ffffff;
+    margin: 10px;
+    border-radius: 14px;
+    padding: 22px 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.folder:hover {
+    background: #f9f8f8;
+}
+
+/* ===== Folder Icon (2D) ===== */
+.folder-icon {
+    width: 64px;
+    height: 48px;
+    background: #4a90e2;
+    border-radius: 8px 8px 6px 6px;
+    margin: 0 auto 12px;
+    position: relative;
+}
+
+.folder-icon::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 8px;
+    width: 26px;
+    height: 12px;
+    background: #6aa8ee;
+    border-radius: 6px 6px 0 0;
+}
+
+/* ===== Folder Name ===== */
+.folder-name {
+    font-size: 16px;
+    color: #333;
+    word-break: break-word;
+}
